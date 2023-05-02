@@ -25,7 +25,8 @@ async fn get_stars(repo: &str) -> Result<u32, Error> {
         .user_agent(APP_USER_AGENT) // needed because otherwise github starts rejecting the requests
         .build()?;
 
-    let request_url = format!("https://api.github.com/repos/{repo}", repo = repo);
+    static API_ROOT: &str = "https://api.github.com";
+    let request_url = format!("{root}/repos/{repo}", root = API_ROOT, repo = repo);
     let response = client.get(&request_url).send().await?;
     let json_string = response.text().await?;
     let repo: Repo =
