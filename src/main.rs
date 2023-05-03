@@ -10,10 +10,16 @@ struct Repo {
 async fn main() -> Result<(), Error> {
     const REPO_PATH: &str = "timabell/gitopolis";
 
-    let stars = get_stars(REPO_PATH).await?;
+    let repo_analysis = analyse_repo(REPO_PATH).await;
 
-    println!("{} has {} stars", REPO_PATH, stars);
+    println!("{}", repo_analysis?);
     Ok(())
+}
+
+async fn analyse_repo(repo: &str) -> Result<String, Error> {
+    let stars = get_stars(repo).await?;
+    let repo_analysis = format!("{} has {} stars", repo, stars);
+    Ok(repo_analysis)
 }
 
 async fn get_stars(repo: &str) -> Result<u32, Error> {
