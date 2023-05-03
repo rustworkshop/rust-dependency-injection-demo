@@ -90,21 +90,6 @@ async fn get_stars_async(repo: &str) -> Result<u32, ReaderError> {
 mod tests {
     use super::*;
 
-    #[tokio::test]
-    async fn formats_repo_name_and_stars() {
-        // set up business logic
-        let analyser = RepoAnalyser {
-            repo_reader: Box::new(FakeRepoReader { star_count: 1000 }), // inject a fake dependency that is under the control of the tests
-        };
-
-        const REPO_PATH: &str = "timabell/gitopolis";
-        let repo_analysis = analyser
-            .analyse_repo(REPO_PATH)
-            .await
-            .expect("analysis failed"); // run the business logic
-        assert_eq!(repo_analysis, "timabell/gitopolis has 1000 stars");
-    }
-
     // Empty struct to hang fake logic off. Could add state/data here later if needed
     struct FakeRepoReader {
         star_count: u32,
@@ -116,5 +101,19 @@ mod tests {
         async fn get_stars(&self, _repo: &str) -> Result<u32, ReaderError> {
             Ok(self.star_count)
         }
+    }
+    #[tokio::test]
+    async fn formats_repo_name_and_stars() {
+        // set up business logic to use fake instead of talking to github
+        let analyser = RepoAnalyser {
+            repo_reader: Box::new(FakeRepoReader { star_count: 1000 }), // inject a fake dependency that is under the control of the tests
+        };
+
+        const REPO_PATH: &str = "timabell/gitopolis";
+        let repo_analysis = analyser
+            .analyse_repo(REPO_PATH)
+            .await
+            .expect("analysis failed"); // run the business logic
+        assert_eq!(repo_analysis, "timabell/gitopolis has 1000 stars");
     }
 }
