@@ -15,6 +15,15 @@ async fn main() {
             exit(1);
         }
     };
+    match run_with_async_trait_with_new().await {
+        Ok(output) => {
+            println!("{}", output);
+        }
+        Err(err) => {
+            eprintln!("run_with_async_trait_with_new failed: {}", err);
+            exit(1);
+        }
+    };
 }
 
 async fn run_with_async_trait() -> Result<String, ReaderError> {
@@ -23,4 +32,10 @@ async fn run_with_async_trait() -> Result<String, ReaderError> {
         repo_reader: Box::new(RealRepoReader {}), // inject the real implementation of RepoReader in to the analyser
     };
     analyser.analyse_repo("timabell/gitopolis").await // run the business logic
+}
+
+async fn run_with_async_trait_with_new() -> Result<String, ReaderError> {
+    // set up business logic with injected dependency(s)
+    let analyser = RepoAnalyser::new(Box::new(RealRepoReader {})); // inject the real implementation of RepoReader in to the analyser
+    analyser.analyse_repo("timabell/schema-explorer").await // run the business logic
 }

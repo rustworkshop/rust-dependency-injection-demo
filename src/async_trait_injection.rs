@@ -42,6 +42,10 @@ pub struct RepoAnalyser {
 
 // implementation of business logic, that has a dependency to inject
 impl RepoAnalyser {
+    pub fn new(repo_reader: Box<dyn RepoReader>) -> Self {
+        RepoAnalyser { repo_reader }
+    }
+
     pub async fn analyse_repo(&self, repo: &str) -> Result<String, ReaderError> {
         let stars = &self
             .repo_reader
@@ -117,6 +121,19 @@ mod tests {
         let analyser = RepoAnalyser {
             repo_reader: Box::new(FakeRepoReader { star_count: 1000 }), // inject a fake dependency that is under the control of the tests
         };
+
+        const REPO_PATH: &str = "timabell/gitopolis";
+        let repo_analysis = analyser
+            .analyse_repo(REPO_PATH)
+            .await
+            .expect("analysis failed"); // run the business logic
+        assert_eq!(repo_analysis, "timabell/gitopolis has 1000 stars");
+    }
+
+    #[tokio::test]
+    async fn formats_repo_name_and_stars_with_new() {
+        // set up business logic to use fake instead of talking to github
+        let analyser = RepoAnalyser::new(Box::new(FakeRepoReader { star_count: 1000 })); // inject a fake dependency that is under the control of the tests
 
         const REPO_PATH: &str = "timabell/gitopolis";
         let repo_analysis = analyser
