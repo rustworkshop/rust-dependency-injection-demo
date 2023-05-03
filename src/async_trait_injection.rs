@@ -3,6 +3,15 @@ use serde::Deserialize;
 use std::fmt;
 use std::fmt::Formatter;
 
+// This file demonstrates doing dependency injection with (async) traits, and hiding the inner Error
+// types that the dependency handles.
+
+// RepoAnalyser is the "business logic" under test. It depends on the trait instead of a real implementation.
+
+// RepoReader is the trait that defines what it needs injected. This is implemented by:
+// - RealRepoReader actually talks to github
+// - FakeRepoReader responds with a predetermined star count for testing the RepoAnalyser logic
+
 #[derive(Deserialize, Debug)]
 struct Repo {
     stargazers_count: u32,
