@@ -1,7 +1,9 @@
-use crate::async_trait_injection::{ReaderError, RealRepoReader, RepoAnalyser};
+use crate::async_trait_injection::{RealRepoReader, RepoAnalyser};
+use crate::shared::ReaderError;
 use std::process::exit;
 
 mod async_trait_injection;
+mod shared;
 
 // main cli that uses the business logic and will need to inject the real dependency
 #[tokio::main] // tokyo gives us async https://docs.rs/tokio/latest/tokio/index.html
