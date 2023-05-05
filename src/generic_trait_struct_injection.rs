@@ -1,21 +1,18 @@
 use crate::shared;
 use async_trait::async_trait;
 
-// This file demonstrates doing dependency injection with (async) traits, and hiding the inner Error types that the dependency handles.
-//
-// - RepoAnalyser is the "business logic" under test. It depends on the trait instead of a real implementation.
-// - RepoReader is the trait that defines what it needs injected. This is implemented by:
-//   - RealRepoReader actually talks to github (the actual logic is delegated to "shared::get_stars_async()" so we can re-use it in multiple demo files).
-//   - FakeRepoReader responds with a predetermined star count for testing the RepoAnalyser logic.
-
-// business logic struct
-pub struct RepoAnalyser {
-    pub repo_reader: Box<dyn RepoReader>, // here is the pointer to whatever was injected
+// the dependency, defined as a trait saying what we need it to do. Like an interface in C#.
+#[async_trait]
+pub trait RepoReader {
+    async fn get_stars(&self, repo: &str) -> Result<u32, shared::ReaderError>; // we need something that does this
 }
 
 // implementation of business logic, that has a dependency to inject
-impl RepoAnalyser {
-    pub fn new(repo_reader: Box<dyn RepoReader>) -> Self {
+pub struct RepoAnalyser<TReader: RepoReader> {
+    pub repo_reader: TReader, // here whatever was injected, no dyn or box this time because we're using generics
+}
+impl<TReader: RepoReader> RepoAnalyser<TReader> {
+    pub fn new(repo_reader: TReader) -> Self {
         RepoAnalyser { repo_reader }
     }
 
@@ -29,16 +26,8 @@ impl RepoAnalyser {
     }
 }
 
-// the dependency, defined as a trait saying what we need it to do. Like an interface in C#.
-#[async_trait]
-pub trait RepoReader {
-    async fn get_stars(&self, repo: &str) -> Result<u32, shared::ReaderError>; // we need something that does this
-}
-
-// Empty struct to hang real logic off. Could add state/data here later if needed
-pub struct RealRepoReader {}
-
 // Real implementation of dependency logic that calls out to internet
+pub struct RealRepoReader {}
 #[async_trait]
 impl RepoReader for RealRepoReader {
     async fn get_stars(&self, repo: &str) -> Result<u32, shared::ReaderError> {
@@ -47,7 +36,7 @@ impl RepoReader for RealRepoReader {
 }
 
 #[cfg(test)]
-mod tests {
+mod generic_trait_tests {
     use super::*;
 
     // Empty struct to hang fake logic off. Could add state/data here later if needed
@@ -55,7 +44,7 @@ mod tests {
         star_count: u32,
     }
 
-    // Fake implementation of dependency logic that calls out to internet
+    // Fake implementation of dependency logic that would otherwise call out to internet
     #[async_trait]
     impl RepoReader for FakeRepoReader {
         async fn get_stars(&self, _repo: &str) -> Result<u32, shared::ReaderError> {
@@ -63,10 +52,10 @@ mod tests {
         }
     }
     #[tokio::test]
-    async fn formats_repo_name_and_stars() {
+    async fn generic_trait() {
         // set up business logic to use fake instead of talking to github
         let analyser = RepoAnalyser {
-            repo_reader: Box::new(FakeRepoReader { star_count: 1000 }), // inject a fake dependency that is under the control of the tests
+            repo_reader: FakeRepoReader { star_count: 1000 }, // inject a fake dependency that is under the control of the tests
         };
 
         const REPO_PATH: &str = "timabell/gitopolis";
@@ -78,9 +67,9 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn formats_repo_name_and_stars_with_new() {
+    async fn generic_trait_with_new() {
         // set up business logic to use fake instead of talking to github
-        let analyser = RepoAnalyser::new(Box::new(FakeRepoReader { star_count: 1000 })); // inject a fake dependency that is under the control of the tests
+        let analyser = RepoAnalyser::new(FakeRepoReader { star_count: 1000 }); // inject a fake dependency that is under the control of the tests
 
         const REPO_PATH: &str = "timabell/gitopolis";
         let repo_analysis = analyser
