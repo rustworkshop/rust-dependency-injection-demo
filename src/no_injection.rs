@@ -10,11 +10,11 @@ impl RepoAnalyser {
 }
 
 #[cfg(test)]
-mod boxed_trait_tests {
+mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn fake_injected() {
+    async fn formats_star_info() {
         let analyser = RepoAnalyser {};
 
         const REPO_PATH: &str = "timabell/gitopolis";

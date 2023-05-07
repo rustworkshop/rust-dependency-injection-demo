@@ -36,7 +36,7 @@ impl RepoReader for RealRepoReader {
 }
 
 #[cfg(test)]
-mod generic_trait_tests {
+mod tests {
     use super::*;
 
     // Empty struct to hang fake logic off. Could add state/data here later if needed
@@ -52,7 +52,7 @@ mod generic_trait_tests {
         }
     }
     #[tokio::test]
-    async fn generic_trait() {
+    async fn formats_star_info() {
         // set up business logic to use fake instead of talking to github
         let analyser = RepoAnalyser {
             repo_reader: FakeRepoReader { star_count: 1000 }, // inject a fake dependency that is under the control of the tests
@@ -67,7 +67,7 @@ mod generic_trait_tests {
     }
 
     #[tokio::test]
-    async fn generic_trait_with_new() {
+    async fn formats_star_info_with_new() {
         // set up business logic to use fake instead of talking to github
         let analyser = RepoAnalyser::new(FakeRepoReader { star_count: 1000 }); // inject a fake dependency that is under the control of the tests
 

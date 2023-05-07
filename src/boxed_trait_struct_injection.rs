@@ -43,7 +43,7 @@ impl RepoReader for RealRepoReader {
 }
 
 #[cfg(test)]
-mod boxed_trait_tests {
+mod tests {
     use super::*;
 
     // Empty struct to hang fake logic off. Could add state/data here later if needed
@@ -59,7 +59,7 @@ mod boxed_trait_tests {
         }
     }
     #[tokio::test]
-    async fn fake_injected() {
+    async fn formats_star_info() {
         // set up business logic to use fake instead of talking to github
         let analyser = RepoAnalyser {
             repo_reader: Box::new(FakeRepoReader { star_count: 1000 }), // inject a fake dependency that is under the control of the tests
@@ -74,7 +74,7 @@ mod boxed_trait_tests {
     }
 
     #[tokio::test]
-    async fn fake_injected_with_new() {
+    async fn formats_star_info_with_new() {
         // set up business logic to use fake instead of talking to github
         let analyser = RepoAnalyser::new(Box::new(FakeRepoReader { star_count: 1000 })); // inject a fake dependency that is under the control of the tests
 
